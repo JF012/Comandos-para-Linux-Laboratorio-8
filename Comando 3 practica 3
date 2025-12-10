@@ -1,0 +1,78 @@
+1. Instalación y Verificación de Docker Compose
+Primero nos aseguramos de que tu sistema tuviera la capacidad de interpretar los archivos compose.
+
+bash
+sudo apt update
+sudo apt install docker-compose-plugin
+docker compose version
+2. Preparación del entorno
+Creamos una carpeta dedicada para mantener el orden.
+
+bash
+mkdir practica-wordpress
+cd practica-wordpress
+3. Verificación de puertos disponibles
+Como el puerto 8080 estaba ocupado, utilizamos este comando para listar los puertos en uso y confirmar que el 8085 estaba libre.
+
+bash
+sudo ss -tulpn | grep LISTEN
+4. Creación del archivo de configuración
+Creamos el archivo docker-compose.yml con la configuración final (usando el puerto 8085).
+
+bash
+nano docker-compose.yml
+Contenido del archivo:
+
+text
+version: '3.8'
+
+services:
+  # Contenedor para la Base de Datos
+  db:
+    image: mysql:5.7
+    container_name: db_wordpress
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wp_user
+      MYSQL_PASSWORD: wp_password
+    volumes:
+      - db_data:/var/lib/mysql
+
+  # Contenedor para el Aplicativo WordPress
+  wordpress:
+    image: wordpress:latest
+    container_name: app_wordpress
+    restart: always
+    ports:
+      - "8085:80"                        # Puerto corregido al 8085
+    environment:
+      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_USER: wp_user
+      WORDPRESS_DB_PASSWORD: wp_password
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp_data:/var/www/html
+    depends_on:
+      - db
+
+volumes:
+  db_data:
+  wp_data:
+(Para guardar en nano: Ctrl + O, Enter. Para salir: Ctrl + X)
+
+5. Despliegue de los contenedores
+Ejecutamos el comando para descargar las imágenes y levantar los servicios en segundo plano.
+
+bash
+sudo docker compose up -d
+6. Verificación de estado
+Confirmamos que ambos contenedores (db_wordpress y app_wordpress) estuvieran "Up".
+
+bash
+sudo docker compose ps
+7. Configuración final
+Accedimos mediante el navegador para finalizar la instalación de WordPress:
+
+URL: http://localhost:8085
