@@ -1,0 +1,35 @@
+1. Preparación del Entorno
+Usaste una sola máquina virtual (Parrot OS) porque Portainer es muy ligero y puede administrarse a sí mismo y a otros contenedores desde la misma máquina.
+
+2. Persistencia de Datos
+Ejecutaste:
+
+bash
+docker volume create portainer_data
+
+3. El Comando de Instalación (La Magia)
+Ejecutaste este comando largo que hizo varias cosas a la vez:
+
+bash
+docker run -d -p 8000:8000 -p 9000:9000 -p 9443:9443 --name portainer --restart=always -v /var/run/docker.sock:/var/run/docker.sock -v portainer_data:/data portainer/portainer-ce:lts
+Aquí está el desglose técnico de lo que hizo posible que funcionara:
+
+-d: Ejecutó Portainer en segundo plano (background) para liberar tu terminal.
+
+-p 9443:9443: Abrió el puerto seguro HTTPS para la interfaz web.​
+
+-p 8000:8000: Abrió el puerto para el servicio de túnel "Edge" (usado si quisieras conectar agentes remotos).​
+
+-v /var/run/docker.sock:/var/run/docker.sock: Este es el paso más importante. Le diste permiso al contenedor de Portainer para "tocar" el archivo socket del Docker de tu sistema anfitrión. Esto es lo que le permite a Portainer controlar (crear, detener, borrar) tus otros contenedores como NGINX.​
+
+4. Configuración y Seguridad
+Ingresaste a https://127.0.0.1:9443.
+
+El navegador te dio una advertencia porque Portainer usa un certificado de seguridad autogenerado. Al dar clic en "Advanced", aceptaste esa conexión cifrada.
+
+Creaste el usuario admin, lo que aseguró el panel de control.
+
+5. Control del Contenedor
+Gracias al vínculo del "socket" (paso 3), Portainer pudo ver tu contenedor nginx que ya estaba corriendo. Al presionar Stop, Portainer envió la señal de apagado a través del socket al motor de Docker, deteniendo el servicio web de NGINX limpiamente.
+
+¡En resumen: convertiste comandos complejos de terminal en clics gracias a que le diste permiso a Portainer de hablar directamente con el motor de Docker
